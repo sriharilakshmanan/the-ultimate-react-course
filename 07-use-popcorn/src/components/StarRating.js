@@ -1,5 +1,5 @@
 import { useState } from "react";
-
+import { PropTypes } from "prop-types";
 const containerStyle = {
     display: "flex",
     alignItems: "center",
@@ -10,41 +10,76 @@ const starContainerStyle = {
     display: "flex",
 };
 
-function StarRating({ maxRating = 5 }) {
+StarRating.propTypes = {
+    color: PropTypes.string,
+    size: PropTypes.number,
+    className: PropTypes.string,
+    defaultRating: PropTypes.number,
+    maxRating: PropTypes.number,
+    messages: PropTypes.array,
+    onRate: PropTypes.func,
+};
+
+function StarRating({
+    color = "#fcc419",
+    size = 48,
+    className = "",
+    defaultRating = 0,
+    maxRating = 5,
+    messages = [],
+    onRate,
+}) {
     const textStyle = {
         lineHeight: "1",
         margin: "0",
-        color: "#000",
-        fontSize: `${20}px`,
+        color: color,
+        fontSize: `${size / 1.5}px`,
     };
 
-    const [rating, setRating] = useState(maxRating);
+    const [rating, setRating] = useState(defaultRating);
+    const [tempRating, setTempRating] = useState(0);
 
-    function handleRating(rating) {
+    function handleClick(rating) {
         setRating(rating);
+        onRate(rating);
+    }
+    function handleHoverIn(rating) {
+        setTempRating(rating);
+    }
+    function handleHoverOut(rating) {
+        setTempRating(rating);
     }
 
     return (
-        <div style={containerStyle} className={""}>
+        <div style={containerStyle} className={className}>
             <div style={starContainerStyle}>
                 {Array.from({ length: maxRating }, (_, i) => (
                     <Star
                         key={i}
-                        isChecked={rating >= i + 1}
-                        onRate={() => handleRating(i + 1)}
-                        color={"#000"}
+                        isChecked={
+                            tempRating ? tempRating >= i + 1 : rating >= i + 1
+                        }
+                        color={color}
+                        size={size}
+                        onClick={() => handleClick(i + 1)}
+                        onHoverIn={() => handleHoverIn(i + 1)}
+                        onHoverOut={() => handleHoverOut(0)}
                     />
                 ))}
             </div>
-            <p style={textStyle}>{rating || ""}</p>
+            <p style={textStyle}>
+                {messages.length === maxRating
+                    ? messages[tempRating ? tempRating - 1 : rating - 1]
+                    : tempRating || rating || ""}
+            </p>
         </div>
     );
 }
 
-function Star({ isChecked, color, onRate }) {
+function Star({ isChecked, color, size, onClick, onHoverIn, onHoverOut }) {
     const starStyle = {
-        width: `${48}px`,
-        height: `${48}px`,
+        width: `${size}px`,
+        height: `${size}px`,
         display: "block",
         cursor: "pointer",
     };
@@ -53,9 +88,9 @@ function Star({ isChecked, color, onRate }) {
         <span
             role="button"
             style={starStyle}
-            onClick={onRate}
-            // onMouseEnter={onHoverIn}
-            // onMouseLeave={onHoverOut}
+            onClick={onClick}
+            onMouseEnter={onHoverIn}
+            onMouseLeave={onHoverOut}
         >
             {isChecked ? (
                 <svg
