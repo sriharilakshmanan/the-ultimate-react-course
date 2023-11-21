@@ -55,6 +55,16 @@ export default function App() {
                 <NumOfResults movies={movies} />
             </Header>
             <Main>
+                {/* Composition of components (explicit prop) */}
+                {/* <Movies element={<ListOfMovies movies={movies} />} />
+                <Movies
+                    element={
+                        <>
+                            <SummaryOfWatchedMovies watched={watched} />
+                            <ListOfWatchedMovies watched={watched} />
+                        </>
+                    }
+                /> */}
                 <Movies>
                     <ListOfMovies movies={movies} />
                 </Movies>
@@ -109,6 +119,22 @@ function Logo() {
 function Main({ children }) {
     return <main className="main">{children}</main>;
 }
+
+// Composition of components (explicit prop)
+// function Movies({ element }) {
+//     const [isOpen, setIsOpen] = useState(true);
+//     return (
+//         <div className="box">
+//             <button
+//                 className="btn-toggle"
+//                 onClick={() => setIsOpen((open) => !open)}
+//             >
+//                 {isOpen ? "–" : "+"}
+//             </button>
+//             {isOpen && element}
+//         </div>
+//     );
+// }
 
 function Movies({ children }) {
     const [isOpen, setIsOpen] = useState(true);
