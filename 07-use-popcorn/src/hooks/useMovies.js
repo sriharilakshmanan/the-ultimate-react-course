@@ -38,7 +38,7 @@ function useMovies(query) {
                     setError("");
                 } catch (error) {
                     if (error.name !== "AbortError") {
-                        console.error(error);
+                        console.error(error.message);
                         setError(error.message);
                     }
                 } finally {

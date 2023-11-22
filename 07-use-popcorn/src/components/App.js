@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import StarRating from "./StarRating";
 import { useMovies } from "../hooks/useMovies";
+import { useLocalStorageState } from "../hooks/useLocalStorageState";
+import { useKey } from "../hooks/useKey";
 
 // const average = (arr) =>
 //     arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
@@ -11,10 +13,10 @@ export default function App() {
     const [query, setQuery] = useState("");
     const [selectedId, setSelectedId] = useState(null);
     // const [watchedMovies, setWatchedMovies] = useState([]);
-    const [watchedMovies, setWatchedMovies] = useState(function () {
-        const watchedMovies = localStorage.getItem("watchedMovies");
-        return JSON.parse(watchedMovies);
-    });
+    const [watchedMovies, setWatchedMovies] = useLocalStorageState(
+        [],
+        "watchedMovies"
+    );
 
     const [movies, isLoading, error] = useMovies(query);
 
@@ -49,16 +51,6 @@ export default function App() {
             watchedMovie.filter((movie) => movie.imdbID !== id)
         );
     }
-
-    useEffect(
-        function () {
-            localStorage.setItem(
-                "watchedMovies",
-                JSON.stringify(watchedMovies)
-            );
-        },
-        [watchedMovies]
-    );
 
     return (
         <>
@@ -135,24 +127,15 @@ function Search({ query, setQuery }) {
     useEffect(function () {
         inputEl.current.focus();
     }, []);
-    useEffect(
-        function () {
-            function enterToFocusOnSearch(e) {
-                if (document.activeElement === inputEl.current) {
-                    return;
-                }
-                if (e.code === "Enter") {
-                    inputEl.current.focus();
-                    setQuery("");
-                }
+    useKey("Enter", function enterToFocusOnSearch(e) {
+        if (e.code === "Enter") {
+            if (document.activeElement === inputEl.current) {
+                return;
             }
-            document.addEventListener("keydown", enterToFocusOnSearch);
-            return function () {
-                document.removeEventListener("keydown", enterToFocusOnSearch);
-            };
-        },
-        [setQuery]
-    );
+            inputEl.current.focus();
+            setQuery("");
+        }
+    });
 
     return (
         <input
@@ -301,20 +284,7 @@ function MovieInfo({
         [userRating]
     );
 
-    useEffect(
-        function () {
-            function escapeToCloseMovie(e) {
-                if (e.code === "Escape") {
-                    onCloseMovie();
-                }
-            }
-            document.addEventListener("keydown", escapeToCloseMovie);
-            return function () {
-                document.removeEventListener("keydown", escapeToCloseMovie);
-            };
-        },
-        [onCloseMovie]
-    );
+    useKey("Escape", onCloseMovie);
 
     useEffect(
         function () {
