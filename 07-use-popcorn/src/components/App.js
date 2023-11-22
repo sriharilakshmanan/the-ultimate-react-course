@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import StarRating from "./StarRating";
 
-const average = (arr) =>
-    arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
+// const average = (arr) =>
+//     arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
 
 const API_KEY = "80f75ba3";
 
@@ -179,6 +179,30 @@ function NumOfResults({ movies }) {
 }
 
 function Search({ query, setQuery }) {
+    const inputEl = useRef(null);
+
+    useEffect(function () {
+        inputEl.current.focus();
+    }, []);
+    useEffect(
+        function () {
+            function enterToFocusOnSearch(e) {
+                if (document.activeElement === inputEl.current) {
+                    return;
+                }
+                if (e.code === "Enter") {
+                    inputEl.current.focus();
+                    setQuery("");
+                }
+            }
+            document.addEventListener("keydown", enterToFocusOnSearch);
+            return function () {
+                document.removeEventListener("keydown", enterToFocusOnSearch);
+            };
+        },
+        [setQuery]
+    );
+
     return (
         <input
             className="search"
@@ -186,6 +210,7 @@ function Search({ query, setQuery }) {
             placeholder="Search movies..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            ref={inputEl}
         />
     );
 }
@@ -281,6 +306,8 @@ function MovieInfo({
     const [isLoading, setIsLoading] = useState(false);
     const [userRating, setUserRating] = useState(0);
 
+    const noOfRatingChangesRef = useRef(0);
+
     const {
         Title: title,
         Year: year,
@@ -307,11 +334,21 @@ function MovieInfo({
             imdbRating: Number(imdbRating),
             runtime: Number(runtime.split(" ").at(0)),
             userRating,
+            noOfRatingChanges: noOfRatingChangesRef.current,
         };
 
         onAddWatchedMovie(newWatchedMovie);
         onCloseMovie();
     }
+
+    useEffect(
+        function () {
+            if (userRating) {
+                noOfRatingChangesRef.current = noOfRatingChangesRef.current + 1;
+            }
+        },
+        [userRating]
+    );
 
     useEffect(
         function () {
@@ -418,13 +455,10 @@ function MovieInfo({
 }
 
 function SummaryOfWatchedMovies({ watchedMovies }) {
-    const avgImdbRating = average(
-        watchedMovies.map((movie) => movie.imdbRating)
+    const totalRuntime = watchedMovies.reduce(
+        (totalRuntime, movie) => totalRuntime + movie.runtime,
+        0
     );
-    const avgUserRating = average(
-        watchedMovies.map((movie) => movie.userRating)
-    );
-    const avgRuntime = average(watchedMovies.map((movie) => movie.runtime));
     return (
         <div className="summary">
             <h2>Movies you've watched</h2>
@@ -434,16 +468,8 @@ function SummaryOfWatchedMovies({ watchedMovies }) {
                     <span>{watchedMovies.length} movies</span>
                 </p>
                 <p>
-                    <span>⭐️</span>
-                    <span>{avgImdbRating}</span>
-                </p>
-                <p>
-                    <span>✪</span>
-                    <span>{avgUserRating}</span>
-                </p>
-                <p>
                     <span>⏳</span>
-                    <span>{avgRuntime} min</span>
+                    <span>{totalRuntime} min</span>
                 </p>
             </div>
         </div>
