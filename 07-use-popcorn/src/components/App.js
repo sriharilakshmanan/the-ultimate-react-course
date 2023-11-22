@@ -7,7 +7,7 @@ const average = (arr) =>
 const API_KEY = "80f75ba3";
 
 export default function App() {
-    const [query, setQuery] = useState("Jigarthanda");
+    const [query, setQuery] = useState("");
     const [movies, setMovies] = useState([]);
     const [selectedId, setSelectedId] = useState(null);
     const [watchedMovies, setWatchedMovies] = useState([]);
@@ -42,7 +42,14 @@ export default function App() {
 
     useEffect(
         function () {
+            if (!query) {
+                setMovies([]);
+                setError("");
+                return;
+            }
+
             const controller = new AbortController();
+
             async function fetchMovies() {
                 try {
                     setIsLoading(true);
@@ -63,19 +70,16 @@ export default function App() {
                     setMovies(data.Search);
                     setError("");
                 } catch (error) {
-                    console.error(error);
                     if (error.name !== "AbortError") {
+                        console.error(error);
                         setError(error.message);
                     }
                 } finally {
                     setIsLoading(false);
                 }
             }
-            if (!query) {
-                setMovies([]);
-                setError("");
-            }
             fetchMovies();
+
             return function () {
                 controller.abort();
             };
@@ -288,6 +292,21 @@ function MovieInfo({
 
     useEffect(
         function () {
+            function escapeToCloseMovie(e) {
+                if (e.code === "Escape") {
+                    onCloseMovie();
+                }
+            }
+            document.addEventListener("keydown", escapeToCloseMovie);
+            return function () {
+                document.removeEventListener("keydown", escapeToCloseMovie);
+            };
+        },
+        [onCloseMovie]
+    );
+
+    useEffect(
+        function () {
             async function getMovieDetails() {
                 setIsLoading(true);
                 const res = await fetch(
@@ -309,7 +328,7 @@ function MovieInfo({
         document.title = title;
         return function () {
             document.title = "usePopcorn";
-            console.log(`Inside the clean-up function - Movie: ${title}`);
+            // console.log(`Inside the clean-up function - Movie: ${title}`);
         };
     }, [title]);
 
