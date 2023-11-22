@@ -10,7 +10,12 @@ export default function App() {
     const [query, setQuery] = useState("");
     const [movies, setMovies] = useState([]);
     const [selectedId, setSelectedId] = useState(null);
-    const [watchedMovies, setWatchedMovies] = useState([]);
+    // const [watchedMovies, setWatchedMovies] = useState([]);
+    const [watchedMovies, setWatchedMovies] = useState(function () {
+        const watchedMovies = localStorage.getItem("watchedMovies");
+        return JSON.parse(watchedMovies);
+    });
+
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
 
@@ -39,6 +44,22 @@ export default function App() {
     function handleAddWatchedMovie(movie) {
         setWatchedMovies((watchedMovies) => [...watchedMovies, movie]);
     }
+
+    function handleDeleteWatchedMovie(id) {
+        setWatchedMovies((watchedMovie) =>
+            watchedMovie.filter((movie) => movie.imdbID !== id)
+        );
+    }
+
+    useEffect(
+        function () {
+            localStorage.setItem(
+                "watchedMovies",
+                JSON.stringify(watchedMovies)
+            );
+        },
+        [watchedMovies]
+    );
 
     useEffect(
         function () {
@@ -78,6 +99,7 @@ export default function App() {
                     setIsLoading(false);
                 }
             }
+            handleCloseMovie();
             fetchMovies();
 
             return function () {
@@ -129,6 +151,7 @@ export default function App() {
                             />
                             <ListOfWatchedMovies
                                 watchedMovies={watchedMovies}
+                                onDelete={handleDeleteWatchedMovie}
                             />
                         </>
                     )}
@@ -427,17 +450,21 @@ function SummaryOfWatchedMovies({ watchedMovies }) {
     );
 }
 
-function ListOfWatchedMovies({ watchedMovies }) {
+function ListOfWatchedMovies({ watchedMovies, onDelete }) {
     return (
         <ul className="list">
             {watchedMovies.map((movie) => (
-                <WatchedMovie key={movie.imdbID} movie={movie} />
+                <WatchedMovie
+                    key={movie.imdbID}
+                    movie={movie}
+                    onDelete={onDelete}
+                />
             ))}
         </ul>
     );
 }
 
-function WatchedMovie({ movie }) {
+function WatchedMovie({ movie, onDelete }) {
     return (
         <li>
             <img src={movie.poster} alt={`${movie.title} poster`} />
@@ -455,6 +482,12 @@ function WatchedMovie({ movie }) {
                     <span>⏳</span>
                     <span>{movie.runtime} min</span>
                 </p>
+                <button
+                    className="btn-delete"
+                    onClick={() => onDelete(movie.imdbID)}
+                >
+                    X
+                </button>
             </div>
         </li>
     );
