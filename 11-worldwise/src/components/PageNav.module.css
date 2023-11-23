@@ -1,0 +1,8 @@
+.nav {
+    background-color: burlywood;
+}
+.nav ul {
+    display: flex;
+    justify-content: space-evenly;
+    list-style: none;
+}
