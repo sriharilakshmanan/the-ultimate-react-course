@@ -1,16 +1,20 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useMemo, useState } from "react";
 
 const SearchContext = createContext();
 
 function SearchProvider({ children }) {
     const [searchQuery, setSearchQuery] = useState("");
-    return (
-        <SearchContext.Provider
-            value={{
+    const value = useMemo(
+        function () {
+            return {
                 searchQuery: searchQuery,
                 setSearchQuery: setSearchQuery,
-            }}
-        >
+            };
+        },
+        [searchQuery, setSearchQuery]
+    );
+    return (
+        <SearchContext.Provider value={value}>
             {children}
         </SearchContext.Provider>
     );
