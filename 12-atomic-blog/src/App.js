@@ -2,6 +2,7 @@ import { memo, useEffect, useState } from "react";
 import PostsProvider, { usePosts } from "./PostsProvider";
 import SearchProvider, { useSearch } from "./SearchProvider";
 import createRandomPost from "./createRandomPost";
+import Test from "./Test";
 
 function App() {
     const [isFakeDark, setIsFakeDark] = useState(false);
@@ -129,6 +130,7 @@ function List() {
                     </li>
                 ))}
             </ul>
+            <Test />
         </>
     );
 }

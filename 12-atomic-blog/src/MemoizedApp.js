@@ -25,16 +25,16 @@ function App() {
               )
             : posts;
 
-    const archiveProps = {
-        show: false,
-        title: `Archived Posts`,
-    };
-    const memoizedArchiveProps = useMemo(function () {
-        return {
-            show: false,
-            title: `Archived Posts`,
-        };
-    }, []);
+    // const archiveProps = {
+    //     show: false,
+    //     title: `Archived Posts`,
+    // };
+    // const memoizedArchiveProps = useMemo(function () {
+    //     return {
+    //         show: false,
+    //         title: `Archived Posts`,
+    //     };
+    // }, []);
 
     const memoizedArchivePropsWithState = useMemo(
         function () {
@@ -129,10 +129,44 @@ function Main({ posts, onAddPost }) {
 }
 
 function Posts({ posts }) {
+    const noOfPostsPerPage = 4;
+    const noOfPages = Math.ceil(posts.length / noOfPostsPerPage); //41/4
+    const [activePageNumber, setActivePageNumber] = useState(1);
+    const start = (activePageNumber - 1) * noOfPostsPerPage + 1;
+    const end = activePageNumber * noOfPostsPerPage;
+
+    const paginatedPosts = posts.slice(start, end + 1);
+
+    function handlePageChange(pageNumber) {
+        setActivePageNumber(pageNumber);
+    }
+
     return (
         <section>
-            <List posts={posts} />
+            <List posts={paginatedPosts} />
+            <Pagination
+                total={noOfPages}
+                activePageNumber={activePageNumber}
+                onPageChange={handlePageChange}
+            />
         </section>
+    );
+}
+
+function Pagination({ total, activePageNumber, onPageChange }) {
+    return (
+        <div className="pagination">
+            {Array.from({ length: total }, (_, i) => i + 1).map(
+                (pageNumber) => (
+                    <button
+                        key={pageNumber}
+                        onClick={() => onPageChange(pageNumber)}
+                    >
+                        {pageNumber}
+                    </button>
+                )
+            )}
+        </div>
     );
 }
 
@@ -184,11 +218,8 @@ const Archive = memo(function Archive({ archiveProps, onAddPost }) {
         // 💥 WARNING: This might make your computer slow! Try a smaller `length` first
         Array.from({ length: 100_000 }, () => createRandomPost())
     );
-
     const { show, title } = archiveProps;
-
     const [showArchive, setShowArchive] = useState(show);
-
     return (
         <aside>
             <h2>{title}</h2>
@@ -203,9 +234,9 @@ const Archive = memo(function Archive({ archiveProps, onAddPost }) {
                             <p>
                                 <strong>{post.title}:</strong> {post.body}
                             </p>
-                            {/* <button onClick={() => onAddPost(post)}>
+                            <button onClick={() => onAddPost(post)}>
                                 Add as new post
-                            </button> */}
+                            </button>
                         </li>
                     ))}
                 </ul>
